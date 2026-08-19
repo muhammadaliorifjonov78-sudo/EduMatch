@@ -91,13 +91,16 @@ if DATABASE_URL:
             'PASSWORD': url.password,
             'HOST': url.hostname,
             'PORT': url.port or 5432,
-            'OPTIONS': {},
+            'OPTIONS': {
+                'sslmode': 'prefer',
+            },
         }
     }
     sslmode = url.query.split('sslmode=')[-1].split('&')[0] if 'sslmode=' in url.query else None
     if sslmode:
         DATABASES['default']['OPTIONS']['sslmode'] = sslmode
 else:
+    print("WARNING: DATABASE_URL is not set! Using SQLite (data will NOT persist).")
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.sqlite3',
