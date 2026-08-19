@@ -10,9 +10,20 @@ SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-48ib%tqvxwm#tlj8h3f3$
 
 DEBUG = os.environ.get('DEBUG', 'False') == 'True'
 
-ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
+ALLOWED_HOSTS = os.environ.get(
+    'ALLOWED_HOSTS',
+    'localhost,127.0.0.1,.up.railway.app'
+).split(',')
 
-CORS_ALLOWED_ORIGINS = os.environ.get('CORS_ALLOWED_ORIGINS', 'http://localhost:5173').split(',')
+CORS_ALLOWED_ORIGINS = os.environ.get(
+    'CORS_ALLOWED_ORIGINS',
+    'http://localhost:5173,http://localhost:3000'
+).split(',')
+
+CSRF_TRUSTED_ORIGINS = os.environ.get(
+    'CSRF_TRUSTED_ORIGINS',
+    'http://localhost:5173,http://localhost:3000'
+).split(',')
 
 # Application definition
 
@@ -33,9 +44,10 @@ INSTALLED_APPS = [
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 MIDDLEWARE = [
+    'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
-    'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -69,6 +81,8 @@ WSGI_APPLICATION = 'auto.wsgi.application'
 DATABASES = {}
 DATABASE_URL = os.environ.get('DATABASE_URL')
 if DATABASE_URL:
+    if DATABASE_URL.startswith('postgres://'):
+        DATABASE_URL = DATABASE_URL.replace('postgres://', 'postgresql://', 1)
     url = urlparse(DATABASE_URL)
     DATABASES = {
         'default': {
@@ -78,8 +92,12 @@ if DATABASE_URL:
             'PASSWORD': url.password,
             'HOST': url.hostname,
             'PORT': url.port or 5432,
+            'OPTIONS': {},
         }
     }
+    sslmode = url.query.split('sslmode=')[-1].split('&')[0] if 'sslmode=' in url.query else None
+    if sslmode:
+        DATABASES['default']['OPTIONS']['sslmode'] = sslmode
 else:
     DATABASES = {
         'default': {
@@ -131,5 +149,6 @@ REST_FRAMEWORK = {
 
 STATIC_URL = 'static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"

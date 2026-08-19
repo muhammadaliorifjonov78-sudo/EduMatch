@@ -1,20 +1,26 @@
 from rest_framework.generics import ListCreateAPIView
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
+from rest_framework import status
 from rest_framework.views import APIView
+
 import random
-import sys
 import os
 
 from django.contrib.auth import authenticate
 from django.contrib.auth.models import User
+from django.utils import timezone
+from rest_framework.authtoken.models import Token
 
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework import status
-
-from .models import Cars, MatchingGroup, Course
-from .serializers import CarsSerializer, MatchingGroupSerializer, CourseSerializer
+from .models import Cars, MatchingGroup, Course, TelegramContact, VerificationCode
+from .serializers import (
+    CarsSerializer,
+    MatchingGroupSerializer,
+    CourseSerializer,
+    RegisterSerializer,
+    LoginSerializer,
+    VerifyCodeSerializer,
+)
 from .permissions import IsManager
 
 
@@ -60,6 +66,8 @@ class CourseFilterView(ListCreateAPIView):
     category berilmasa barcha kurslar qaytadi.
     """
     serializer_class = CourseSerializer
+    permission_classes = [AllowAny]
+    pagination_class = None
 
     def get_queryset(self):
         queryset = Course.objects.all()
@@ -103,19 +111,6 @@ class CourseDetailView(APIView):
 
 
 
-
-
-
-import os
-import random
-
-from django.contrib.auth import authenticate
-from django.contrib.auth.models import User
-from django.utils import timezone
-from rest_framework.authtoken.models import Token
-
-from .models import TelegramContact, VerificationCode
-from .serializers import RegisterSerializer, LoginSerializer, VerifyCodeSerializer
 
 
 def send_telegram_code(phone_number, code):
