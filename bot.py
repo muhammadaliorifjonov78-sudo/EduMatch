@@ -15,8 +15,8 @@ from telegram.ext import Application, CommandHandler, MessageHandler, CallbackQu
 
 from doc.models import TelegramContact
 
-BOT_TOKEN = os.getenv("BOT_TOKEN", "8885885560:AAHVmXVttPbjgTs0W72m9DcUMwDQNsn62_Y").strip()
-API_URL = "http://127.0.0.1:8000/api/courses/"
+BOT_TOKEN = os.getenv("BOT_TOKEN", "").strip()
+API_URL = os.getenv("API_URL", "https://edumatch-production-92a4.up.railway.app/api/courses/")
 
 
 def normalize_phone(value):
@@ -41,7 +41,7 @@ def send_code_to_phone(phone_number, code):
 
     text = (
         "🔐 <b>EduMatch tasdiqlash kodi</b>\n\n"
-        f"Sizning 4 xonali kodingiz: <b>{code}</b>\n\n"
+        f"Sizning 6 xonali kodingiz: <b>{code}</b>\n\n"
         "Bu kodni EduMatch saytiga kiriting. Kod 5 daqiqa amal qiladi."
     )
 
