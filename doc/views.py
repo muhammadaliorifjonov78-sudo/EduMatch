@@ -117,29 +117,34 @@ def send_telegram_code(phone_number, code):
     try:
         from bot import send_code_to_phone
         return send_code_to_phone(phone_number, code)
+    except ImportError as exc:
+        print("Telegram import error:", exc)
+        return False
     except Exception as exc:
         print("Telegram error:", exc)
         return False
 
 
 def create_and_send_code(user, phone_number):
-    contact = TelegramContact.objects.filter(phone_number=phone_number).first()
-    if not contact:
-        return False, "Bu telefon raqami Telegram botga ulanmagan. Telegram'da EduMatch botiga /start yuboring va telefon raqamingizni ulashing."
-
-    code = str(random.randint(1000, 9999))
+    code = str(random.randint(100000, 999999))
     verification, _ = VerificationCode.objects.get_or_create(user=user)
     verification.code = code
     verification.phone_number = phone_number
-    verification.telegram_username = contact.telegram_username
     verification.is_verified = False
     verification.created_at = timezone.now()
+
+    contact = TelegramContact.objects.filter(phone_number=phone_number).first()
+    if contact:
+        verification.telegram_username = contact.telegram_username
+
     verification.save()
 
-    sent = send_telegram_code(phone_number, code)
-    if not sent:
-        return False, "Telegramga kod yuborilmadi. Bot ishlayotganini tekshiring."
-    return True, "Tasdiqlash kodi Telegramga yuborildi."
+    if contact:
+        sent = send_telegram_code(phone_number, code)
+        if sent:
+            return True, "Tasdiqlash kodi Telegramga yuborildi.", code
+
+    return True, "Tasdiqlash kodi yaratildi.", code
 
 
 class RegisterView(APIView):
@@ -154,16 +159,10 @@ class RegisterView(APIView):
         if User.objects.filter(username=phone_number).exists():
             return Response({"success": False, "message": "Bu telefon raqami allaqachon ro'yxatdan o'tgan. Login qiling."}, status=status.HTTP_400_BAD_REQUEST)
 
-        if not TelegramContact.objects.filter(phone_number=phone_number).exists():
-            return Response({"success": False, "message": "Avval Telegram'da EduMatch botiga /start yuboring va telefon raqamingizni ulashing."}, status=status.HTTP_400_BAD_REQUEST)
-
         user = User.objects.create_user(username=phone_number, password=password)
-        sent, message = create_and_send_code(user, phone_number)
-        if not sent:
-            user.delete()
-            return Response({"success": False, "message": message}, status=status.HTTP_400_BAD_REQUEST)
+        sent, message, code = create_and_send_code(user, phone_number)
 
-        return Response({"success": True, "message": message, "phone_number": phone_number}, status=status.HTTP_201_CREATED)
+        return Response({"success": True, "message": message, "phone_number": phone_number, "code": code}, status=status.HTTP_201_CREATED)
 
 
 class LoginView(APIView):
@@ -179,11 +178,9 @@ class LoginView(APIView):
         if user is None:
             return Response({"success": False, "message": "Telefon raqami yoki parol noto'g'ri."}, status=status.HTTP_401_UNAUTHORIZED)
 
-        sent, message = create_and_send_code(user, phone_number)
-        if not sent:
-            return Response({"success": False, "message": message}, status=status.HTTP_400_BAD_REQUEST)
+        sent, message, code = create_and_send_code(user, phone_number)
 
-        return Response({"success": True, "message": message, "phone_number": phone_number})
+        return Response({"success": True, "message": message, "phone_number": phone_number, "code": code})
 
 
 class VerifyCodeView(APIView):

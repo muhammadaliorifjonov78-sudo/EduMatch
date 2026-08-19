@@ -65,12 +65,12 @@ class LoginSerializer(serializers.Serializer):
 
 class VerifyCodeSerializer(serializers.Serializer):
     phone_number = serializers.CharField()
-    code = serializers.CharField(min_length=4, max_length=4)
+    code = serializers.CharField(min_length=6, max_length=6)
 
     def validate_phone_number(self, value):
         return normalize_phone(value)
 
     def validate_code(self, value):
         if not value.isdigit():
-            raise serializers.ValidationError("Kod faqat 4 ta raqamdan iborat bo'lishi kerak.")
+            raise serializers.ValidationError("Kod faqat 6 ta raqamdan iborat bo'lishi kerak.")
         return value

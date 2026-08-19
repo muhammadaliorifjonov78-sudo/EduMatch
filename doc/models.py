@@ -23,7 +23,7 @@ class VerificationCode(models.Model):
         on_delete=models.CASCADE,
         related_name="verification",
     )
-    code = models.CharField(max_length=4)
+    code = models.CharField(max_length=6)
     phone_number = models.CharField(max_length=20, db_index=True)
     telegram_username = models.CharField(max_length=150, blank=True)
     created_at = models.DateTimeField(auto_now=True)
