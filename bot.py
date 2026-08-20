@@ -16,7 +16,7 @@ from telegram.ext import Application, CommandHandler, MessageHandler, CallbackQu
 from doc.models import TelegramContact
 
 BOT_TOKEN = os.getenv("BOT_TOKEN", "").strip()
-API_URL = os.getenv("API_URL", "https://edumatch-production-92a4.up.railway.app/api/courses/")
+API_URL = os.getenv("API_URL", "https://edumatch1.up.railway.app/api/courses/")
 
 
 def normalize_phone(value):
