@@ -22,6 +22,7 @@ _default_origins = [
     'http://localhost:5173',
     'http://localhost:3000',
     'https://vue-production-c971.up.railway.app',
+    'https://edumatch.up.railway.app',
 ]
 _env_origins = [
     o.strip() for o in os.environ.get('CORS_ALLOWED_ORIGINS', '').split(',') if o.strip()
