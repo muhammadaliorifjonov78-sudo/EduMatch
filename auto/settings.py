@@ -15,7 +15,7 @@ ALLOWED_HOSTS = os.environ.get(
     'localhost,127.0.0.1,.up.railway.app'
 ).split(',')
 
-CORS_ALLOW_ALL_ORIGINS = False
+CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOW_CREDENTIALS = True
 
 _default_origins = [
